@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { loadConfig } from '../src/config.js'
 
 const validEnvironment = {
+  APP_ENV: 'development',
   API_HOST: '0.0.0.0',
   API_PORT: '7302',
   DATABASE_URL: 'postgresql://creator_flow:creator_flow_dev@localhost:7311/creator_flow',
@@ -23,6 +24,8 @@ describe('loadConfig', () => {
     const config = loadConfig(validEnvironment)
 
     assert.deepEqual(config, {
+      appEnv: 'development',
+      isProduction: false,
       api: {
         host: '0.0.0.0',
         port: 7302,
@@ -42,6 +45,22 @@ describe('loadConfig', () => {
         jwtTtlHours: 24,
       },
     })
+  })
+
+  it('identifies the production environment', () => {
+    const config = loadConfig({ ...validEnvironment, APP_ENV: 'production' })
+
+    assert.equal(config.appEnv, 'production')
+    assert.equal(config.isProduction, true)
+  })
+
+  it('defaults to development when APP_ENV is missing', () => {
+    const { APP_ENV: _, ...environmentWithoutAppEnv } = validEnvironment
+
+    const config = loadConfig(environmentWithoutAppEnv)
+
+    assert.equal(config.appEnv, 'development')
+    assert.equal(config.isProduction, false)
   })
 
   it('identifies a missing required variable', () => {

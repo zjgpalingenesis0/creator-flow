@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 const environmentSchema = z.object({
+  APP_ENV: z.enum(['development', 'test', 'production']).default('development'),
   API_HOST: z.string().min(1),
   API_PORT: z.coerce.number().int().min(1).max(65_535),
   DATABASE_URL: z.string().url(),
@@ -30,6 +31,8 @@ export function loadConfig(environment: Record<string, string | undefined> = pro
 
   const values = result.data
   return {
+    appEnv: values.APP_ENV,
+    isProduction: values.APP_ENV === 'production',
     api: {
       host: values.API_HOST,
       port: values.API_PORT,
