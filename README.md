@@ -47,32 +47,57 @@ docker compose ps
 - `redis`：Redis，端口 `7312`
 - `storage`：RustFS，S3 API 端口 `7313`，控制台端口 `7314`
 
-### 4. 安装后端依赖
+### 4. 安装依赖
 
 ```bash
 cd backend
+pnpm install
+
+cd ../frontend
 pnpm install
 ```
 
 ### 5. 执行数据库迁移
 
 ```bash
+cd ~/creator-flow/backend
 pnpm db:migrate
 ```
 
 该命令会执行尚未应用的 Drizzle migration。当前会创建 `users` 表；重复执行不会重复建表。
 
-### 6. 启动开发服务
+### 6. 启动后端开发服务
 
 ```bash
+cd ~/creator-flow/backend
 pnpm dev
 ```
 
-开发服务监听 `http://127.0.0.1:7302`，源码变化后会自动重启。API 首次启动时还会自动创建 RustFS 的 `creator-flow` Bucket。
+后端监听 `http://127.0.0.1:7302`，源码变化后会自动重启。API 首次启动时还会自动创建 RustFS 的 `creator-flow` Bucket。
+
+### 7. 启动前端开发服务
+
+保持后端运行，打开另一个终端执行：
+
+```bash
+cd ~/creator-flow
+nvm use
+
+cd frontend
+pnpm dev
+```
+
+前端监听 `http://127.0.0.1:7301`，并将 `/api` 和 `/events` 请求代理到后端的 `7302` 端口。
 
 ## 验证初始化结果
 
-保持 `pnpm dev` 运行，在另一个终端执行：
+保持前后端运行，在浏览器打开：
+
+```text
+http://127.0.0.1:7301
+```
+
+也可以直接验证后端：
 
 ```bash
 curl http://127.0.0.1:7302/api
@@ -98,6 +123,14 @@ curl -i http://127.0.0.1:7302/api/health
 
 如果任一依赖不可用，该接口会返回 HTTP 503，并在对应字段中显示错误类型。
 
+通过前端代理检查同一个接口：
+
+```bash
+curl http://127.0.0.1:7301/api/health
+```
+
+预期得到相同的健康检查响应。
+
 还可以在浏览器打开 RustFS 控制台：
 
 ```text
@@ -114,13 +147,30 @@ http://localhost:7314
 cd ~/creator-flow
 nvm use
 docker compose up -d
+```
 
-cd backend
-pnpm db:migrate
+终端一启动后端：
+
+```bash
+cd ~/creator-flow/backend
 pnpm dev
 ```
 
-如果拉取的新代码修改了 `package.json` 或 `pnpm-lock.yaml`，应在启动前补充执行：
+终端二启动前端：
+
+```bash
+cd ~/creator-flow/frontend
+pnpm dev
+```
+
+仅当拉取的新代码包含新的 `backend/migrations/` 文件时，执行：
+
+```bash
+cd ~/creator-flow/backend
+pnpm db:migrate
+```
+
+如果某个子项目的 `package.json` 或 `pnpm-lock.yaml` 发生变化，应进入对应的 `backend` 或 `frontend` 目录执行：
 
 ```bash
 pnpm install
@@ -128,9 +178,10 @@ pnpm install
 
 ## 运行测试
 
-在 `backend` 目录执行：
+后端验证：
 
 ```bash
+cd ~/creator-flow/backend
 pnpm test
 pnpm typecheck
 pnpm build
@@ -148,6 +199,21 @@ pnpm start
 
 `pnpm dev` 和 `pnpm start` 都会占用端口 `7302`，不要同时运行。
 
+前端验证：
+
+```bash
+cd ~/creator-flow/frontend
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
+```
+
+- `pnpm test`：运行前端单元测试。
+- `pnpm typecheck`：执行前端 TypeScript 类型检查。
+- `pnpm lint`：执行 Oxlint 静态检查。
+- `pnpm build`：生成 `frontend/dist` 生产构建。
+
 ## 修改数据库结构
 
 修改 `backend/src/db/schema/` 下的 Drizzle Schema 后，依次执行：
@@ -162,7 +228,7 @@ pnpm db:migrate
 
 ## 停止服务
 
-在运行后端的终端按 `Ctrl+C` 停止 API，然后执行：
+分别在运行前端和后端的终端按 `Ctrl+C`，然后执行：
 
 ```bash
 cd ~/creator-flow
