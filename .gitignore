@@ -1,0 +1,13 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local development notes
+/docs/local/
+
+# Node.js
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
