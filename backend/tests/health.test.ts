@@ -2,12 +2,14 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import { buildApp } from '../src/app.js'
+import { testAssetOptions } from './support/assets.js'
 import { testAuthOptions } from './support/auth.js'
 
 describe('GET /api/health', () => {
   it('reports all dependencies as healthy', async (context) => {
     const app = buildApp({
       ...testAuthOptions,
+      ...testAssetOptions,
       logger: false,
       healthProbes: {
         database: async () => undefined,
@@ -31,6 +33,7 @@ describe('GET /api/health', () => {
   it('returns 503 when a dependency is unavailable', async (context) => {
     const app = buildApp({
       ...testAuthOptions,
+      ...testAssetOptions,
       logger: false,
       healthProbes: {
         database: async () => {

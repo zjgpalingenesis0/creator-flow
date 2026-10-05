@@ -9,6 +9,7 @@ import {
   InvalidCredentialsError,
   UsernameTakenError,
 } from '../src/services/auth.js'
+import { testAssetOptions } from './support/assets.js'
 
 const JWT_SECRET = 'test-secret-that-is-at-least-32-characters'
 const USER_ID = '9cb48148-6219-4c15-bd7b-3f75ac82d7de'
@@ -45,6 +46,7 @@ function createTestApp(options: {
   }
 
   const app = buildApp({
+    ...testAssetOptions,
     logger: false,
     healthProbes: {
       database: async () => undefined,

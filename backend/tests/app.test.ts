@@ -2,11 +2,13 @@ import assert from 'node:assert/strict'
 import { after, describe, it } from 'node:test'
 
 import { buildApp } from '../src/app.js'
+import { testAssetOptions } from './support/assets.js'
 import { testAuthOptions } from './support/auth.js'
 
 describe('CreatorFlow API', () => {
   const app = buildApp({
     ...testAuthOptions,
+    ...testAssetOptions,
     logger: false,
     healthProbes: {
       database: async () => undefined,
