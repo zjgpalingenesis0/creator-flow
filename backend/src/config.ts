@@ -14,6 +14,11 @@ const environmentSchema = z.object({
   S3_FORCE_PATH_STYLE: z.enum(['true', 'false']).transform((value) => value === 'true'),
   JWT_SECRET: z.string().min(32),
   JWT_TTL_HOURS: z.coerce.number().int().positive(),
+  IMAGE_PROVIDER: z.enum(['mock', 'dashscope']).default('mock'),
+  DASHSCOPE_API_KEY: z.string().default(''),
+  DASHSCOPE_BASE_URL: z.string().url().default('https://dashscope.aliyuncs.com'),
+  TEXT_TO_IMAGE_MODEL: z.string().min(1).default('qwen-image-3.0-pro'),
+  IMAGE_EDIT_MODEL: z.string().min(1).default('qwen-image-edit-max'),
 })
 
 export class ConfigError extends Error {
@@ -50,6 +55,13 @@ export function loadConfig(environment: Record<string, string | undefined> = pro
     auth: {
       jwtSecret: values.JWT_SECRET,
       jwtTtlHours: values.JWT_TTL_HOURS,
+    },
+    imageProvider: {
+      name: values.IMAGE_PROVIDER,
+      apiKey: values.DASHSCOPE_API_KEY,
+      baseUrl: values.DASHSCOPE_BASE_URL,
+      textToImageModel: values.TEXT_TO_IMAGE_MODEL,
+      imageEditModel: values.IMAGE_EDIT_MODEL,
     },
   }
 }

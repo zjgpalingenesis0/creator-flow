@@ -17,6 +17,11 @@ const validEnvironment = {
   S3_FORCE_PATH_STYLE: 'true',
   JWT_SECRET: 'dev-only-secret-please-change-in-production',
   JWT_TTL_HOURS: '24',
+  IMAGE_PROVIDER: 'dashscope',
+  DASHSCOPE_API_KEY: 'dashscope-test-key',
+  DASHSCOPE_BASE_URL: 'https://dashscope.example.com',
+  TEXT_TO_IMAGE_MODEL: 'text-to-image-test',
+  IMAGE_EDIT_MODEL: 'image-edit-test',
 }
 
 describe('loadConfig', () => {
@@ -44,6 +49,13 @@ describe('loadConfig', () => {
         jwtSecret: 'dev-only-secret-please-change-in-production',
         jwtTtlHours: 24,
       },
+      imageProvider: {
+        name: 'dashscope',
+        apiKey: 'dashscope-test-key',
+        baseUrl: 'https://dashscope.example.com',
+        textToImageModel: 'text-to-image-test',
+        imageEditModel: 'image-edit-test',
+      },
     })
   })
 
@@ -61,6 +73,34 @@ describe('loadConfig', () => {
 
     assert.equal(config.appEnv, 'development')
     assert.equal(config.isProduction, false)
+  })
+
+  it('defaults to the local mock image provider', () => {
+    const {
+      IMAGE_PROVIDER: _provider,
+      DASHSCOPE_API_KEY: _apiKey,
+      DASHSCOPE_BASE_URL: _baseUrl,
+      TEXT_TO_IMAGE_MODEL: _textModel,
+      IMAGE_EDIT_MODEL: _editModel,
+      ...environmentWithoutImageProvider
+    } = validEnvironment
+
+    const config = loadConfig(environmentWithoutImageProvider)
+
+    assert.deepEqual(config.imageProvider, {
+      name: 'mock',
+      apiKey: '',
+      baseUrl: 'https://dashscope.aliyuncs.com',
+      textToImageModel: 'qwen-image-3.0-pro',
+      imageEditModel: 'qwen-image-edit-max',
+    })
+  })
+
+  it('rejects an unknown image provider', () => {
+    assert.throws(
+      () => loadConfig({ ...validEnvironment, IMAGE_PROVIDER: 'unknown' }),
+      /IMAGE_PROVIDER/,
+    )
   })
 
   it('identifies a missing required variable', () => {
